@@ -29,9 +29,6 @@ let networkType = null;
 let generationHash = null;
 let epochAdjustment = null;
 
-let alice = null;
-let bob = null;
-
 let listener = null;
 let txList = [];
 
@@ -59,7 +56,7 @@ startListen = (async function(address, netType) {
 
       // タイムスタンプの算出
       const timstamp = (epochAdjustment * 1000) + Number(txInfo.transactionInfo.timestamp.toString());
-      dateTime = new Date(timstamp);
+      const dateTime = new Date(timstamp);
 
       // 同じアドレスの2回目以降のトランザクションは対象外にする
       const isDuplicate = txList.find(addr => (addr.address === tx.signer.address.plain()));
