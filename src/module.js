@@ -45,29 +45,38 @@ startListen = (async function(address, netType) {
     listener.newBlock();
 
     // 承認トランザクションの検知
-    listener.confirmed(sym.Address.createFromRawAddress(address))
+    const rawAddress = sym.Address.createFromRawAddress(address);
+    listener.confirmed(rawAddress)
     .subscribe(async tx  => {
       // トランザクション情報の取得
       const txInfo = await txRepo.getTransaction(
         tx.transactionInfo.hash,
         sym.TransactionGroup.Confirmed
       ).toPromise();
-      console.log(txInfo);
 
-      // タイムスタンプの算出
-      const timstamp = (epochAdjustment * 1000) + Number(txInfo.transactionInfo.timestamp.toString());
-      const dateTime = new Date(timstamp);
-
-      // 同じアドレスの2回目以降のトランザクションは対象外にする
-      const isDuplicate = txList.find(addr => (addr.address === tx.signer.address.plain()));
-
-      // リスト追加
-      txList.push({
-        time: dateTime.toLocaleDateString('ja-JP') + ' ' + dateTime.toLocaleTimeString('ja-JP'),
-        address: tx.signer.address.plain(),
-        state: isDuplicate ? LotteryStateEnum.Duplicate : LotteryStateEnum.Vote,
-        message: txInfo.message.payload,
-      });
+      // 転送トランザクション以外は対象外
+      switch (txInfo.type) {
+        case sym.TransactionType.TRANSFER:
+          // 転送トランザクションは抽選対象
+          addTxList(txInfo);
+          break;
+      
+        case sym.TransactionType.AGGREGATE_BONDED:
+        case sym.TransactionType.AGGREGATE_COMPLETE:
+          // アグリゲートトランザクションの場合、対象アドレスへの転送トランザクションが含まれていれば抽選対象
+          for (let idxInnerTx = 0; idxInnerTx < txInfo.innerTransactions.length; idxInnerTx++) {
+            const innerTx = txInfo.innerTransactions[idxInnerTx];
+            if (sym.TransactionType.TRANSFER === innerTx.type && rawAddress.plain() === innerTx.recipientAddress.plain()) {
+              addTxList(innerTx);
+              break;
+            }
+          }
+          break;
+      
+        default:
+          // 転送トランザクション以外は対象外
+          break;
+      }
     });
 
     listener.webSocket.onclose = async function(){
@@ -85,7 +94,6 @@ stopListen = (async function() {
     listener.close();
   }
   console.log('Listen Stop.');
-  console.log(txList);
   return true;
 });
 
@@ -146,4 +154,22 @@ async function setRepository(netType) {
   epochAdjustment = await repo.getEpochAdjustment().toPromise();
 
   return true;
+}
+
+// リポジトリ設定
+async function addTxList(txInfo) {
+  // タイムスタンプの算出
+  const timstamp = (epochAdjustment * 1000) + Number(txInfo.transactionInfo.timestamp.toString());
+  const dateTime = new Date(timstamp);
+
+  // 同じアドレスの2回目以降のトランザクションは対象外にする
+  const isDuplicate = txList.find(addr => (addr.address === txInfo.signer.address.plain()));
+
+  // リスト追加
+  txList.push({
+    time: dateTime.toLocaleDateString('ja-JP') + ' ' + dateTime.toLocaleTimeString('ja-JP'),
+    address: txInfo.signer.address.plain(),
+    state: isDuplicate ? LotteryStateEnum.Duplicate : LotteryStateEnum.Vote,
+    message: sym.MessageType.EncryptedMessage === txInfo.message.type ? '[Encrypted Message]' : txInfo.message.payload,
+  });
 }
