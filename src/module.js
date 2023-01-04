@@ -89,7 +89,7 @@ startListen = (async function(address, netType) {
 });
 
 // リスナーストップ
-stopListen = (async function() {
+stopListen = (function() {
   if (null !== listener) {
     listener.close();
   }
@@ -163,7 +163,7 @@ async function setRepository(netType) {
 }
 
 // リポジトリ設定
-async function addTxList(txInfo) {
+function addTxList(txInfo) {
   // タイムスタンプの算出
   const timstamp = (epochAdjustment * 1000) + Number(txInfo.transactionInfo.timestamp.toString());
   const dateTime = new Date(timstamp);

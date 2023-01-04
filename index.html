@@ -152,7 +152,7 @@
     if ('152' === document.forms.formMosaic.inputNetType.value) {
       visibleElement('buttonTransfer');
     }
-    await refreshList();
+    refreshList();
     await startListen(
       document.forms.formMosaic.inputAddress.value,
       document.forms.formMosaic.inputNetType.value
@@ -174,15 +174,15 @@
       clearInterval(intervalId);
       intervalId = null;
       document.forms.formMosaic.buttonStop.innerText = originMessage;
-      await stopListen();
-      await refreshList();
+      stopListen();
+      refreshList();
       if (0 < getValidAddressNum()) {
         enableButtonElement('buttonLottery');
       }
     }, 30 * 1000);
   }
 
-  async function onExecuteTransfer() {
+  function onExecuteTransfer() {
     window.open('https://testnet.symbol.tools/?recipient=' + document.forms.formMosaic.inputAddress.value + '&amount=1', '_blank');
   }
 
@@ -201,7 +201,7 @@
     }, 10 * 1000);
   }
 
-  async function refreshList(forceRefresh = false) {
+  function refreshList(forceRefresh = false) {
     const list = getAddressList();
 
     const elementAddressList = document.getElementById("addressListArea");
