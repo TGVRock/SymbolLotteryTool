@@ -98,8 +98,14 @@ stopListen = (async function() {
 });
 
 // アドレスリストの取得
-getAddressList = (async function() {
+getAddressList = (function() {
   return txList;
+});
+
+// アドレスリストの取得
+getValidAddressNum = (function() {
+  const validAddressList = txList.filter(addr => (addr.state === LotteryStateEnum.Vote));
+  return validAddressList.length;
 });
 
 // 抽選実行

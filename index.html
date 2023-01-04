@@ -88,12 +88,12 @@
             </button>
           </div>
           <div class="col-4 text-center">
-            <button type="button" class="btn btn-primary" id="buttonStop" disabled onclick="onListenStopClick()">
+            <button type="button" class="btn btn-primary btn-secondary" id="buttonStop" disabled onclick="onListenStopClick()">
               Stop Listen
             </button>
           </div>
           <div class="col-4 text-center">
-            <button type="button" class="btn btn-primary" id="buttonLottery" disabled onclick="onExecuteLottery()">
+            <button type="button" class="btn btn-primary btn-secondary" id="buttonLottery" disabled onclick="onExecuteLottery()">
               Lottery
             </button>
           </div>
@@ -108,30 +108,30 @@
     <section class="container text-break" id='addressListArea'>
       <ul class="list-group list-group-flush">
         <li class="list-group-item">
-          <div class="row"><div class="col-4">time</div><div class="col-8">address</div></div>
+          <div class="row"><div class="col-4">time</div><div class="col-8">address</div><div class="col-4"></div><div class="col-8">message</div></div>
         </li>
         <li class="list-group-item list-group-item-election-1">
-          <div class="row"><div class="col-4">time</div><div class="col-8">1st election address</div></div>
+          <div class="row"><div class="col-4">time</div><div class="col-8">1st election address</div><div class="col-4"></div><div class="col-8">message</div></div>
         </li>
         <li class="list-group-item list-group-item-election-2">
-          <div class="row"><div class="col-4">time</div><div class="col-8">2nd election address</div></div>
+          <div class="row"><div class="col-4">time</div><div class="col-8">2nd election address</div><div class="col-4"></div><div class="col-8">message</div></div>
         </li>
         <li class="list-group-item list-group-item-election-3">
-          <div class="row"><div class="col-4">time</div><div class="col-8">3rd election address</div></div>
+          <div class="row"><div class="col-4">time</div><div class="col-8">3rd election address</div><div class="col-4"></div><div class="col-8">message</div></div>
         </li>
         <li class="list-group-item list-group-item-election-4">
-          <div class="row"><div class="col-4">time</div><div class="col-8">4th election address</div></div>
+          <div class="row"><div class="col-4">time</div><div class="col-8">4th election address</div><div class="col-4"></div><div class="col-8">message</div></div>
         </li>
         <li class="list-group-item list-group-item-election-5">
-          <div class="row"><div class="col-4">time</div><div class="col-8">5th election address</div></div>
+          <div class="row"><div class="col-4">time</div><div class="col-8">5th election address</div><div class="col-4"></div><div class="col-8">message</div></div>
         </li>
         <li class="list-group-item list-group-item-election-6">
-          <div class="row"><div class="col-4">time</div><div class="col-8">6th election address</div></div>
+          <div class="row"><div class="col-4">time</div><div class="col-8">6th election address</div><div class="col-4"></div><div class="col-8">message</div></div>
         </li>
       </ul>
     </section>
     <section class="d-none animate__animated animate__fadeIn" id="loadArea">
-      <div class="position-fixed top-50 start-50 translate-middle bg-white vw-100 vh-100"></div>
+      <div class="position-fixed top-50 start-50 translate-middle vw-100 vh-100 bg-white"></div>
       <div class="position-fixed top-50 start-50 translate-middle text-center user-select-none">
         <h3 class="animate__animated animate__bounce animate__infinite">Now Lottery... </h3>
         <div class="spinner-border text-secondary" role="status">
@@ -139,30 +139,6 @@
         </div>
       </div>
     </section>
-
-    <!-- <div class="toast-container">
-      <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-          <strong class="me-auto">Transfer Transaction</strong>
-          <small class="text-muted">just now</small>
-          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body">
-          See? Just like this.
-        </div>
-      </div>
-    
-      <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header">
-          <strong class="me-auto">Bootstrap</strong>
-          <small class="text-muted">2 seconds ago</small>
-          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-        <div class="toast-body">
-          Heads up, toasts will stack automatically
-        </div>
-      </div>
-    </div> -->
   </article>
 </body>
 <script src="resource/bundle.min.js"></script>
@@ -171,9 +147,8 @@
   async function onListenStartClick() {
     document.forms.formMosaic.inputAddress.disabled = true;
     document.forms.formMosaic.inputNetType.disabled = true;
-    document.forms.formMosaic.buttonStart.disabled = true;
-    document.forms.formMosaic.buttonStop.disabled = false;
-    document.forms.formMosaic.buttonLottery.disabled = true;
+    disableButtonElement('buttonStart');
+    enableButtonElement('buttonStop');
     if ('152' === document.forms.formMosaic.inputNetType.value) {
       visibleElement('buttonTransfer');
     }
@@ -185,20 +160,24 @@
     intervalId = setInterval(refreshList, 10 * 1000);
   }
   async function onListenStopClick() {
-    document.forms.formMosaic.buttonStop.disabled = true;
-    document.forms.formMosaic.buttonStop.innerText = 'wait confirmed...';
+    disableButtonElement('buttonStop');
+    const orginMessage = document.forms.formMosaic.buttonStop.innerText;
+    const waitElement = document.createElement('span');
+    waitElement.setAttribute('class', 'animate__animated animate__flash animate__infinite');
+    waitElement.innerText = 'wait confirmed...';
+    document.forms.formMosaic.buttonStop.innerText = '';
+    document.forms.formMosaic.buttonStop.appendChild(waitElement);
     if ('152' === document.forms.formMosaic.inputNetType.value) {
       invisibleElement('buttonTransfer');
     }
     setTimeout(async () => {
       clearInterval(intervalId);
       intervalId = null;
-      document.forms.formMosaic.buttonStop.innerText = 'Stop Listen';
+      document.forms.formMosaic.buttonStop.innerText = orginMessage;
       await stopListen();
       await refreshList();
-      const list = await getAddressList();
-      if (0 < list.length) {
-        document.forms.formMosaic.buttonLottery.disabled = false;
+      if (0 < getValidAddressNum()) {
+        enableButtonElement('buttonLottery');
       }
     }, 30 * 1000);
   }
@@ -216,11 +195,14 @@
     setTimeout(() => {
       fadeOutElement('loadArea');
       refreshList(true);
-    }, 5 * 1000);
+      if (0 >= getValidAddressNum()) {
+        disableButtonElement('buttonLottery');
+      }
+    }, 10 * 1000);
   }
 
   async function refreshList(forceRefresh = false) {
-    const list = await getAddressList();
+    const list = getAddressList();
 
     const elementAddressList = document.getElementById("addressListArea");
     if (!(forceRefresh) && (list.length === elementAddressList.firstElementChild.childElementCount)) {
@@ -272,6 +254,17 @@
     }
     elementAddressList.removeChild(elementAddressList.firstElementChild);
     elementAddressList.appendChild(onChainDataElement);
+  }
+
+  function enableButtonElement(elementId) {
+    buttonElement = document.getElementById(elementId);
+    buttonElement.disabled = false;
+    buttonElement.classList.remove("btn-secondary");
+  }
+  function disableButtonElement(elementId) {
+    buttonElement = document.getElementById(elementId);
+    buttonElement.disabled = true;
+    buttonElement.classList.add("btn-secondary");
   }
 
   function visibleElement(elementId) {
