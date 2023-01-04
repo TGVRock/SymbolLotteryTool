@@ -161,7 +161,7 @@
   }
   async function onListenStopClick() {
     disableButtonElement('buttonStop');
-    const orginMessage = document.forms.formMosaic.buttonStop.innerText;
+    const originMessage = document.forms.formMosaic.buttonStop.innerText;
     const waitElement = document.createElement('span');
     waitElement.setAttribute('class', 'animate__animated animate__flash animate__infinite');
     waitElement.innerText = 'wait confirmed...';
@@ -173,7 +173,7 @@
     setTimeout(async () => {
       clearInterval(intervalId);
       intervalId = null;
-      document.forms.formMosaic.buttonStop.innerText = orginMessage;
+      document.forms.formMosaic.buttonStop.innerText = originMessage;
       await stopListen();
       await refreshList();
       if (0 < getValidAddressNum()) {
