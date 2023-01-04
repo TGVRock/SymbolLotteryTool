@@ -9,7 +9,6 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"/>
   <script>
     window.addEventListener('DOMContentLoaded', function() {
-      visibleElement('inputArea');
       // クエリパラメータでデータが与えられている場合は自動読み込み
       const searchParams = new URLSearchParams(window.location.search);
       if (!searchParams.has('targetAddress') || !searchParams.has('netType')) {
@@ -68,7 +67,7 @@
 
 <body id="top">
 	<article>
-    <section class="container d-none" id="inputArea">
+    <section class="container" id="inputArea">
       <form id="formMosaic">
         <div class="mb-3 row">
           <label for="inputAddress" class="col-sm-12 col-form-label">Address</label>
@@ -131,9 +130,9 @@
         </li>
       </ul>
     </section>
-    <section class="d-none" id="loadArea">
+    <section class="d-none animate__animated animate__fadeIn" id="loadArea">
       <div class="position-fixed top-50 start-50 translate-middle bg-white vw-100 vh-100"></div>
-      <div class="position-fixed top-50 start-50 translate-middle text-center">
+      <div class="position-fixed top-50 start-50 translate-middle text-center user-select-none">
         <h3 class="animate__animated animate__bounce animate__infinite">Now Lottery... </h3>
         <div class="spinner-border text-secondary" role="status">
           <span class="visually-hidden">Now Lottery...</span>
@@ -209,15 +208,15 @@
   }
 
   async function onExecuteLottery() {
-    visibleElement('loadArea', true);
     if (!(lotteryTransaction())) {
       console.log('all address selected.');
       return;
     }
-    await setTimeout(async () => {
-      invisibleElement('loadArea', false);
-    }, 10 * 1000);
-    await refreshList(true);
+    visibleElement('loadArea');
+    setTimeout(() => {
+      fadeOutElement('loadArea');
+      refreshList(true);
+    }, 5 * 1000);
   }
 
   async function refreshList(forceRefresh = false) {
@@ -275,48 +274,21 @@
     elementAddressList.appendChild(onChainDataElement);
   }
 
-  async function createLoading() {
-    loadingTextElement = document.createElement('h3');
-    loadingTextElement.setAttribute('class', 'animate__animated animate__bounce animate__infinite');
-    loadingTextElement.innerText = 'Now Lottery...';
-    loadingHiddenElement = document.createElement('span');
-    loadingHiddenElement.setAttribute('class', 'visually-hidden');
-    loadingHiddenElement.innerText = 'Now Lottery...';
-    loadingCycleElement = document.createElement('div');
-    loadingCycleElement.setAttribute('class', 'spinner-border text-secondary');
-    loadingCycleElement.setAttribute('role', 'status');
-    loadingCycleElement.appendChild(loadingHiddenElement);
-    loadingElement = document.createElement('div');
-    loadingElement.setAttribute('class', 'position-fixed top-50 start-50 translate-middle text-center');
-    loadingElement.appendChild(loadingTextElement);
-    loadingElement.appendChild(loadingCycleElement);
-    bgElement = document.createElement('div');
-    bgElement.setAttribute('class', 'position-fixed top-50 start-50 translate-middle bg-white vw-100 vh-100 bg-1');
-    bgElement.appendChild(loadingElement);
-
-    const elementAddressList = document.getElementById("loadArea");
-    elementAddressList.removeChild(elementAddressList.firstElementChild);
-    elementAddressList.appendChild(onChainDataElement);
-  }
-
-  function visibleElement(elementId, fade = false) {
+  function visibleElement(elementId) {
     loadArea = document.getElementById(elementId);
-    loadArea.classList.add("d-block");
-    if (fade) {
-      loadArea.classList.add("animate__animated");
-      loadArea.classList.add("animate__fadein");
-    }
     loadArea.classList.remove("d-none");
   }
-
-  function invisibleElement(elementId, fade = false) {
+  function invisibleElement(elementId) {
     loadArea = document.getElementById(elementId);
     loadArea.classList.add("d-none");
-    loadArea.classList.remove("d-block");
-    if (fade) {
-      loadArea.classList.remove("animate__animated");
-      loadArea.classList.remove("animate__fadein");
-    }
+  }
+  function fadeOutElement(elementId) {
+    loadArea = document.getElementById(elementId);
+    loadArea.classList.add("animate__fadeOut");
+    setTimeout(() => {
+      loadArea.classList.add("d-none");
+      loadArea.classList.remove("animate__fadeOut");
+    }, 1 * 1000);
   }
 </script>
 
