@@ -25,12 +25,10 @@ let txRepo = null;
 let nsRepo = null;
 let wsEndpoint = null;
 
-let networkType = null;
-let generationHash = null;
 let epochAdjustment = null;
 
 let listener = null;
-let txList = [];
+let addressList = [];
 
 // リスナースタート
 startListen = (async function(address, netType) {
@@ -39,7 +37,7 @@ startListen = (async function(address, netType) {
     return false;
   }
 
-  txList = [];
+  addressList = [];
   listener = new sym.Listener(wsEndpoint,nsRepo,WebSocket);
   listener.open().then(() => {
     listener.newBlock();
@@ -58,7 +56,7 @@ startListen = (async function(address, netType) {
       switch (txInfo.type) {
         case sym.TransactionType.TRANSFER:
           // 転送トランザクションは抽選対象
-          addTxList(txInfo);
+          addAddressList(txInfo);
           break;
       
         case sym.TransactionType.AGGREGATE_BONDED:
@@ -67,7 +65,7 @@ startListen = (async function(address, netType) {
           for (let idxInnerTx = 0; idxInnerTx < txInfo.innerTransactions.length; idxInnerTx++) {
             const innerTx = txInfo.innerTransactions[idxInnerTx];
             if (sym.TransactionType.TRANSFER === innerTx.type && rawAddress.plain() === innerTx.recipientAddress.plain()) {
-              addTxList(innerTx);
+              addAddressList(innerTx);
               break;
             }
           }
@@ -99,20 +97,20 @@ stopListen = (function() {
 
 // アドレスリストの取得
 getAddressList = (function() {
-  return txList;
+  return addressList;
 });
 
-// アドレスリストの取得
+// 抽選対象のアドレス個数の取得
 getValidAddressNum = (function() {
-  const validAddressList = txList.filter(addr => (addr.state === LotteryStateEnum.Vote));
+  const validAddressList = addressList.filter(addr => (addr.state === LotteryStateEnum.Vote));
   return validAddressList.length;
 });
 
 // 抽選実行
 lotteryTransaction = (function() {
   const voteIdxList = [];
-  for (let idx = 0; idx < txList.length; idx++) {
-    if (LotteryStateEnum.Vote === txList[idx].state) {
+  for (let idx = 0; idx < addressList.length; idx++) {
+    if (LotteryStateEnum.Vote === addressList[idx].state) {
       voteIdxList.push(idx);
     }
   }
@@ -120,8 +118,8 @@ lotteryTransaction = (function() {
     return false;
   }
   const selectedIdx = voteIdxList[Math.floor(Math.random() * voteIdxList.length)];
-  const selectedTxList = txList.filter(addr => ((addr.state !== LotteryStateEnum.Duplicate) && (addr.state !== LotteryStateEnum.Vote)));
-  txList[selectedIdx].state = selectedTxList.length + 1;
+  const selectedAddressList = addressList.filter(addr => ((addr.state !== LotteryStateEnum.Duplicate) && (addr.state !== LotteryStateEnum.Vote)));
+  addressList[selectedIdx].state = selectedAddressList.length + 1;
   return true;
 });
 
@@ -154,25 +152,22 @@ async function setRepository(netType) {
   txRepo = repo.createTransactionRepository();
   nsRepo = repo.createNamespaceRepository();
   wsEndpoint = nodeUri.replace('http', 'ws') + "/ws";
-
-  networkType = await repo.getNetworkType().toPromise();
-  generationHash = await repo.getGenerationHash().toPromise();
   epochAdjustment = await repo.getEpochAdjustment().toPromise();
 
   return true;
 }
 
-// リポジトリ設定
-function addTxList(txInfo) {
+// アドレスリストへの追加
+function addAddressList(txInfo) {
   // タイムスタンプの算出
   const timstamp = (epochAdjustment * 1000) + Number(txInfo.transactionInfo.timestamp.toString());
   const dateTime = new Date(timstamp);
 
   // 同じアドレスの2回目以降のトランザクションは対象外にする
-  const isDuplicate = txList.find(addr => (addr.address === txInfo.signer.address.plain()));
+  const isDuplicate = addressList.find(addr => (addr.address === txInfo.signer.address.plain()));
 
   // リスト追加
-  txList.push({
+  addressList.push({
     time: dateTime.toLocaleDateString('ja-JP') + ' ' + dateTime.toLocaleTimeString('ja-JP'),
     address: txInfo.signer.address.plain(),
     state: isDuplicate ? LotteryStateEnum.Duplicate : LotteryStateEnum.Vote,
