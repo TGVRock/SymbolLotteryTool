@@ -36,6 +36,20 @@
       document.forms.formMosaic.inputAddress.value = queryAddress;
       document.forms.formMosaic.inputNetType.value = netType;
     });
+    window.addEventListener('load', function() {
+      if ("undefined" === typeof window.SSS) {
+        setTimeout(setAddressFromSSS, 500);
+      } else {
+        setAddressFromSSS();
+      }
+    });
+    function setAddressFromSSS() {
+      if ("undefined" === typeof window.SSS) {
+        return;
+      }
+      document.forms.formMosaic.inputAddress.value = window.SSS.activeAddress;
+      document.forms.formMosaic.inputNetType.value = String(window.SSS.activeNetworkType);
+    }
   </script>
   <style>
     .list-group-item-election-1 {
