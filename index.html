@@ -47,6 +47,7 @@
       if ("undefined" === typeof window.SSS) {
         return;
       }
+      invisibleElement("SSSExtensionNotice");
       document.forms.formMosaic.inputAddress.value = window.SSS.activeAddress;
       document.forms.formMosaic.inputNetType.value = String(window.SSS.activeNetworkType);
     }
@@ -94,6 +95,7 @@
           <div class="col-sm-9">
             <input type="text" class="form-control" id="inputAddress" placeholder="Input Address...">
           </div>
+          <div class="col-sm-12" id="SSSExtensionNotice">* If you are linked to SSS, the address will be automatically filled in.</div>
         </div>
         <div class="mb-3 row">
           <div class="col-4 text-center">
