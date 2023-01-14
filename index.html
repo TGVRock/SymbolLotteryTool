@@ -272,25 +272,40 @@
 
   function enableButtonElement(elementId) {
     buttonElement = document.getElementById(elementId);
+    if (null === buttonElement) {
+      return;
+    }
     buttonElement.disabled = false;
     buttonElement.classList.remove("btn-secondary");
   }
   function disableButtonElement(elementId) {
     buttonElement = document.getElementById(elementId);
+    if (null === buttonElement) {
+      return;
+    }
     buttonElement.disabled = true;
     buttonElement.classList.add("btn-secondary");
   }
 
   function visibleElement(elementId) {
     loadArea = document.getElementById(elementId);
+    if (null === loadArea) {
+      return;
+    }
     loadArea.classList.remove("d-none");
   }
   function invisibleElement(elementId) {
     loadArea = document.getElementById(elementId);
+    if (null === loadArea) {
+      return;
+    }
     loadArea.classList.add("d-none");
   }
   function fadeOutElement(elementId) {
     loadArea = document.getElementById(elementId);
+    if (null === loadArea) {
+      return;
+    }
     loadArea.classList.add("animate__fadeOut");
     setTimeout(() => {
       loadArea.classList.add("d-none");
