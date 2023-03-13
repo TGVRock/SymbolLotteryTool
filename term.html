@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<title>secret base</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"/>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      // クエリパラメータでデータが与えられている場合は自動読み込み
+      const searchParams = new URLSearchParams(window.location.search);
+      if (!searchParams.has('targetAddress') || !searchParams.has('netType')) {
+        return;
+      }
+      
+      // パラメータの取得と検証
+      const queryAddress = searchParams.get('targetAddress');
+      const queryNetType = searchParams.get('netType');
+      netType = -1;
+      switch (queryNetType) {
+        case '104':
+        case 'main':
+          netType = "104";
+          break;
+
+        case '152':
+        case 'test':
+          netType = "152";
+          break;
+
+        default:
+          return;
+      }
+      document.forms.formMosaic.inputAddress.value = queryAddress;
+      document.forms.formMosaic.inputNetType.value = netType;
+    });
+    window.addEventListener('load', function() {
+      if ("undefined" === typeof window.SSS) {
+        setTimeout(setAddressFromSSS, 500);
+      } else {
+        setAddressFromSSS();
+      }
+    });
+    function setAddressFromSSS() {
+      if ("undefined" === typeof window.SSS) {
+        return;
+      }
+      invisibleElement("SSSExtensionNotice");
+      document.forms.formMosaic.inputAddress.value = window.SSS.activeAddress;
+      document.forms.formMosaic.inputNetType.value = String(window.SSS.activeNetworkType);
+    }
+  </script>
+  <style>
+    .list-group-item-duplicated {
+      background-color: #e4e4e4;
+    }
+    .list-group-item-election-1 {
+      color: #055160;
+      background-color: #cff4fc;
+    }
+    .list-group-item-election-2 {
+      color: #084298;
+      background-color: #cfe2ff;
+    }
+    .list-group-item-election-3 {
+      color: #0f5132;
+      background-color: #d1e7dd;
+    }
+    .list-group-item-election-4 {
+      color: #664d03;
+      background-color: #fff3cd;
+    }
+    .list-group-item-election-5 {
+      color: #842029;
+      background-color: #f8d7da;
+    }
+    .list-group-item-election-6 {
+      color: #ff0022;
+      background-color: #fcfcfc;
+    }
+  </style>
+</head>
+
+<body id="top">
+	<article>
+    <section class="container" id="inputArea">
+      <form id="formMosaic">
+        <div class="mb-3 row">
+          <label for="inputAddress" class="col-sm-12 col-form-label">Address</label>
+          <div class="col-sm-3">
+            <select class="form-select" id="inputNetType" aria-label="Select NET Type">
+              <option selected value="104">MAIN NET</option>
+              <option value="152">TEST NET</option>
+            </select>
+          </div>
+          <div class="col-sm-9">
+            <input type="text" class="form-control" id="inputAddress" placeholder="Input Address...">
+          </div>
+          <div class="col-sm-12" id="SSSExtensionNotice">* If you are linked to SSS, the address will be automatically filled in.</div>
+        </div>
+        <div class="mb-3 row">
+          <div class="col-5 text-center">
+            <input type="date" id="start" class="w-100" />
+          </div>
+          <div class="col-2 text-center">
+            ~
+          </div>
+          <div class="col-5 text-center">
+            <input type="date" id="end" class="w-100" />
+          </div>
+        </div>
+        <div class="mb-3 row">
+          <div class="col-6 text-center">
+            <button type="button" class="btn btn-primary" id="buttonStart" onclick="onListenStartClick()">
+              Totalization
+            </button>
+          </div>
+          <div class="col-6 text-center">
+            <button type="button" class="btn btn-primary btn-secondary" id="buttonLottery" disabled onclick="onExecuteLottery()">
+              Lottery
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+    <section class="container text-break" id='addressListArea'>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+          <div class="row"><div class="col-4">time</div><div class="col-8">address</div><div class="col-4"></div><div class="col-8">Twitter Link</div><div class="col-4"></div><div class="col-8">message</div></div>
+        </li>
+        <li class="list-group-item list-group-item-election-1">
+          <div class="row"><div class="col-4">time</div><div class="col-8">1st election address</div><div class="col-4"></div><div class="col-8">Twitter Link</div><div class="col-4"></div><div class="col-8">message</div></div>
+        </li>
+        <li class="list-group-item list-group-item-election-2">
+          <div class="row"><div class="col-4">time</div><div class="col-8">2nd election address</div><div class="col-4"></div><div class="col-8">Twitter Link</div><div class="col-4"></div><div class="col-8">message</div></div>
+        </li>
+        <li class="list-group-item list-group-item-election-3">
+          <div class="row"><div class="col-4">time</div><div class="col-8">3rd election address</div><div class="col-4"></div><div class="col-8">Twitter Link</div><div class="col-4"></div><div class="col-8">message</div></div>
+        </li>
+        <li class="list-group-item list-group-item-election-4">
+          <div class="row"><div class="col-4">time</div><div class="col-8">4th election address</div><div class="col-4"></div><div class="col-8">Twitter Link</div><div class="col-4"></div><div class="col-8">message</div></div>
+        </li>
+        <li class="list-group-item list-group-item-election-5">
+          <div class="row"><div class="col-4">time</div><div class="col-8">5th election address</div><div class="col-4"></div><div class="col-8">Twitter Link</div><div class="col-4"></div><div class="col-8">message</div></div>
+        </li>
+        <li class="list-group-item list-group-item-election-6">
+          <div class="row"><div class="col-4">time</div><div class="col-8">6th election address</div><div class="col-4"></div><div class="col-8">Twitter Link</div><div class="col-4"></div><div class="col-8">message</div></div>
+        </li>
+      </ul>
+    </section>
+    <section class="d-none animate__animated animate__fadeIn" id="loadArea">
+      <div class="position-fixed top-50 start-50 translate-middle vw-100 vh-100 bg-white"></div>
+      <div class="position-fixed top-50 start-50 translate-middle text-center user-select-none">
+        <h3 class="animate__animated animate__bounce animate__infinite">Now Lottery... </h3>
+        <div class="spinner-border text-secondary" role="status">
+          <span class="visually-hidden">Now Lottery...</span>
+        </div>
+      </div>
+    </section>
+  </article>
+</body>
+<script src="resource/bundle.js"></script>
+<script>
+  let intervalId = null;
+  async function onListenStartClick() {
+    document.forms.formMosaic.inputAddress.disabled = true;
+    document.forms.formMosaic.inputNetType.disabled = true;
+    document.forms.formMosaic.start.disabled = true;
+    document.forms.formMosaic.end.disabled = true;
+    disableButtonElement('buttonStart');
+    await getPeriodTxList(
+      document.forms.formMosaic.inputAddress.value,
+      document.forms.formMosaic.inputNetType.value,
+      document.forms.formMosaic.start.value,
+      document.forms.formMosaic.end.value
+    );
+    refreshList();
+    enableButtonElement('buttonLottery');
+  }
+
+  async function onExecuteLottery() {
+    if (!(lotteryTransaction())) {
+      console.log('all address selected.');
+      return;
+    }
+    visibleElement('loadArea');
+    setTimeout(() => {
+      fadeOutElement('loadArea');
+      refreshList(true);
+      if (0 >= getValidAddressNum()) {
+        disableButtonElement('buttonLottery');
+      }
+    }, 10 * 1000);
+  }
+
+  function refreshList(forceRefresh = false) {
+    const list = getAddressList();
+
+    const elementAddressList = document.getElementById("addressListArea");
+    if (!(forceRefresh) && (list.length === elementAddressList.firstElementChild.childElementCount)) {
+      return;
+    }
+
+    onChainDataElement = document.createElement('ul');
+    onChainDataElement.setAttribute('class', 'list-group list-group-flush animate__animated animate__fadeIn');
+    for (let index = 0; index < list.length; index++) {
+      timestampElement = document.createElement('div');
+      timestampElement.setAttribute('class', 'col-sm-4');
+      timestampElement.innerText = list[index].time;
+      addressElement = document.createElement('div');
+      addressElement.setAttribute('class', 'col-sm-8');
+      switch (list[index].state) {
+        case -1:
+        case 0:
+          addressElement.innerText = list[index].address;
+          break;
+      
+        default:
+          addressElement.innerText = '[' + list[index].state + '] ' + list[index].address;
+          break;
+      }
+      blankElement = document.createElement('div');
+      blankElement.setAttribute('class', 'col-sm-4');
+      twitterLinkElement = document.createElement('a');
+      twitterLinkElement.setAttribute('href', 'https://twitter.com/' + list[index].twitter);
+      twitterLinkElement.setAttribute('target', '_blank');
+      twitterLinkElement.innerText = list[index].twitter;
+      twitterElement = document.createElement('div');
+      twitterElement.setAttribute('class', 'col-sm-8');
+      twitterElement.appendChild(twitterLinkElement);
+      blankElement2 = document.createElement('div');
+      blankElement2.setAttribute('class', 'col-sm-4');
+      messageElement = document.createElement('div');
+      messageElement.setAttribute('class', 'col-sm-8');
+      messageElement.innerText = list[index].message;
+      rowElement = document.createElement('div');
+      rowElement.setAttribute('class', 'row');
+      rowElement.appendChild(timestampElement);
+      rowElement.appendChild(addressElement);
+      rowElement.appendChild(blankElement);
+      rowElement.appendChild(twitterElement);
+      rowElement.appendChild(blankElement2);
+      rowElement.appendChild(messageElement);
+      listItemElement = document.createElement('li');
+      switch (list[index].state) {
+        case -1:
+          listItemElement.setAttribute('class', 'list-group-item list-group-item-duplicated');
+          break;
+
+          case 0:
+          listItemElement.setAttribute('class', 'list-group-item');
+          break;
+      
+        default:
+          listItemElement.setAttribute('class', 'list-group-item list-group-item-election-' + list[index].state);
+          break;
+      }
+      listItemElement.appendChild(rowElement);
+      onChainDataElement.appendChild(listItemElement);
+    }
+    elementAddressList.removeChild(elementAddressList.firstElementChild);
+    elementAddressList.appendChild(onChainDataElement);
+  }
+
+  function enableButtonElement(elementId) {
+    buttonElement = document.getElementById(elementId);
+    if (null === buttonElement) {
+      return;
+    }
+    buttonElement.disabled = false;
+    buttonElement.classList.remove("btn-secondary");
+  }
+  function disableButtonElement(elementId) {
+    buttonElement = document.getElementById(elementId);
+    if (null === buttonElement) {
+      return;
+    }
+    buttonElement.disabled = true;
+    buttonElement.classList.add("btn-secondary");
+  }
+
+  function visibleElement(elementId) {
+    loadArea = document.getElementById(elementId);
+    if (null === loadArea) {
+      return;
+    }
+    loadArea.classList.remove("d-none");
+  }
+  function invisibleElement(elementId) {
+    loadArea = document.getElementById(elementId);
+    if (null === loadArea) {
+      return;
+    }
+    loadArea.classList.add("d-none");
+  }
+  function fadeOutElement(elementId) {
+    loadArea = document.getElementById(elementId);
+    if (null === loadArea) {
+      return;
+    }
+    loadArea.classList.add("animate__fadeOut");
+    setTimeout(() => {
+      loadArea.classList.add("d-none");
+      loadArea.classList.remove("animate__fadeOut");
+    }, 1 * 1000);
+  }
+</script>
+
+</html>
