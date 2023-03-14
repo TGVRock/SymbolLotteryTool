@@ -145,8 +145,8 @@ getPeriodTxList = (async function(address, netType, startDateStr, endDateStr,) {
   console.log(endDateBlock);
 
   const criteria = {
-    type: [sym.TransactionType.TRANSFER],
-    recipientAddress: sym.Address.createFromRawAddress(address),
+    type: [sym.TransactionType.TRANSFER, sym.TransactionType.AGGREGATE_BONDED, sym.TransactionType.AGGREGATE_COMPLETE],
+    address: sym.Address.createFromRawAddress(address),
     group: sym.TransactionGroup.Confirmed,
     pageSize: 100,
     pageNumber: 1,
@@ -157,38 +157,40 @@ getPeriodTxList = (async function(address, netType, startDateStr, endDateStr,) {
   if (typeof endDateBlock != "undefined") {
     criteria.toHeight = endDateBlock;
   }
-  const txList = await searchTransactions(netType, criteria);
-  console.log(txList);
+  const searchTxList = await searchTransactions(netType, criteria);
+  console.log(searchTxList);
 
-  // アグリゲートトランザクションの場合、対象アドレスへの転送トランザクションが含まれていれば抽選対象
-  criteria.type = [sym.TransactionType.AGGREGATE_BONDED, sym.TransactionType.AGGREGATE_COMPLETE];
-  const aggTxList = await searchTransactions(netType, criteria);
-  console.log(aggTxList);
-  const aggInnerTxList = [];
-  for (let index = 0; index < aggTxList.length; index++) {
-    const aggTx = aggTxList[index];
-    if (typeof aggTx.transactionInfo === "undefined" || typeof aggTx.transactionInfo.hash === "undefined" ) {
+  // トランザクションリストの作成
+  const txList = [];
+  for (let index = 0; index < searchTxList.length; index++) {
+    const tx = searchTxList[index];
+    // 転送トランザクションの場合はそのまま追加
+    if (tx.type === sym.TransactionType.TRANSFER) {
+      if (address === tx.recipientAddress.plain()) {
+        txList.push(tx);
+      }
       continue;
     }
-    const aggTxInfo = await txRepo.getTransaction(aggTx.transactionInfo.hash);
+    // アグリゲートトランザクションの場合、対象アドレスへの転送トランザクションが含まれていれば抽選対象
+    if (typeof tx.transactionInfo === "undefined" || typeof tx.transactionInfo.hash === "undefined" ) {
+      continue;
+    }
+    const aggTxInfo = await txRepo.getTransaction(tx.transactionInfo.hash, sym.TransactionGroup.Confirmed).toPromise();
     if (typeof aggTxInfo === "undefined") {
       continue;
     }
     for (let idxInnerTx = 0; idxInnerTx < aggTxInfo.innerTransactions.length; idxInnerTx++) {
       const innerTx = aggTxInfo.innerTransactions[idxInnerTx];
       if (sym.TransactionType.TRANSFER === innerTx.type && address === innerTx.recipientAddress.plain()) {
-        aggInnerTxList.push(innerTx);
+        txList.push(innerTx);
         break;
       }
     }
     
   }
-  console.log(aggInnerTxList);
+  console.log(txList);
 
   txList.forEach(element => {
-    addAddressListForTwitterAccount(element);
-  });
-  aggInnerTxList.forEach(element => {
     addAddressListForTwitterAccount(element);
   });
   console.log(addressList);
@@ -251,6 +253,12 @@ function addAddressList(txInfo) {
 
 // アドレスリストへの追加
 function addAddressListForTwitterAccount(txInfo) {
+  console.log({
+    address: txInfo.signer.address.plain(),
+    messageType: txInfo.message.type,
+    message: txInfo.message.payload,
+  });
+
   // タイムスタンプの算出
   const timstamp = (epochAdjustment * 1000) + Number(txInfo.transactionInfo.timestamp.toString());
   const dateTime = new Date(timstamp);
@@ -266,7 +274,6 @@ function addAddressListForTwitterAccount(txInfo) {
     return;
   }
   const message = txInfo.message.payload;
-  console.log(message);
   let startIdx = message.indexOf('@');
   if (0 > startIdx) {
     // 全角も許容しておく
@@ -278,7 +285,11 @@ function addAddressListForTwitterAccount(txInfo) {
   let endIdx = message.indexOf(' ', startIdx);
   if (0 > endIdx) {
     // 全角も許容しておく
-    endIdx = message.indexOf('　');
+    endIdx = message.indexOf('　', startIdx);
+    if (0 > endIdx) {
+      // 改行も許容
+      endIdx = message.indexOf("\n", startIdx);
+    }
   }
   const accountName = 0 > endIdx ? message.substring(startIdx + 1) : message.substring(startIdx + 1, endIdx);
   // 既に同じアカウントが存在する場合は対象外にする
