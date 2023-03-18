@@ -282,9 +282,13 @@ function addAddressListForTwitterAccount(txInfo) {
   if (0 > endIdx) {
     // 全角も許容しておく
     endIdx = message.indexOf('　', startIdx);
+  }
+  const endLfIdx = message.indexOf("\n", startIdx);
+  if (0 <= endLfIdx) {
     if (0 > endIdx) {
-      // 改行も許容
-      endIdx = message.indexOf("\n", startIdx);
+      endIdx = endLfIdx;
+    } else if (endLfIdx < endIdx) {
+      endIdx = endLfIdx;
     }
   }
   const accountName = 0 > endIdx ? message.substring(startIdx + 1) : message.substring(startIdx + 1, endIdx);
