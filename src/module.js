@@ -137,12 +137,8 @@ getPeriodTxList = (async function(address, netType, startDateStr, endDateStr,) {
 
   const startDate = new Date(startDateStr + " 00:00:00");
   const endDate = new Date(endDateStr + " 23:59:59");
-  console.log(startDate.getTime());
-  console.log(endDate.getTime());
   startDateBlock = await getBlockHeightFromDate(netType, startDate);
   endDateBlock = await getBlockHeightFromDate(netType, endDate);
-  console.log(startDateBlock);
-  console.log(endDateBlock);
 
   const criteria = {
     type: [sym.TransactionType.TRANSFER, sym.TransactionType.AGGREGATE_BONDED, sym.TransactionType.AGGREGATE_COMPLETE],
@@ -188,7 +184,7 @@ getPeriodTxList = (async function(address, netType, startDateStr, endDateStr,) {
     }
     
   }
-  console.log(txList);
+  // console.log(txList);
 
   txList.forEach(element => {
     addAddressListForTwitterAccount(element);
@@ -313,7 +309,6 @@ async function getBlockHeightFromDate(netType, targetDate) {
   }
 
   // 未来の時刻の場合はundefined
-  console.log(targetDate);
   if (typeof targetDate === "undefined" || targetDate == "Invalid Date") {
     return undefined;
   }
@@ -324,9 +319,7 @@ async function getBlockHeightFromDate(netType, targetDate) {
   // タイムスタンプの算出
   const realTimstamp = targetDate.getTime();
   const blockTimestamp = realTimstamp - (epochAdjustment * 1000);
-  console.log(blockTimestamp);
   let predictHeight = Math.ceil(blockTimestamp / (45 * 1000));
-  console.log(predictHeight);
   const predictBlockInfo = await blockRepo.getBlockByHeight(UInt64.fromUint(predictHeight)).toPromise();
   if (predictBlockInfo.timestamp <= blockTimestamp) {
     while (true) {
@@ -349,7 +342,6 @@ async function getBlockHeightFromDate(netType, targetDate) {
       predictHeight -= Math.ceil(diff / (45 * 1000));
     }
   }
-  console.log(predictHeight);
 
   const result = await blockRepo.search({
     offset: (predictHeight - 1).toString(),
@@ -357,10 +349,7 @@ async function getBlockHeightFromDate(netType, targetDate) {
     pageSize: 100,
     pageNumber: 1,
   }).toPromise();
-  console.log(result);
-  console.log(Number(result.data[99].timestamp.toString()));
   const f = result.data.filter(value => (Number(value.timestamp.toString()) >= blockTimestamp));
-  console.log(f);
   return Number(f[0].height.toString());
 }
 
@@ -369,7 +358,6 @@ async function searchTransactions(netType, criteria) {
   if (!(await setRepository(netType))) {
     return [];
   }
-  console.log(criteria);
 
   const pageTxes = await txRepo.search(criteria).toPromise();
   if (typeof pageTxes === "undefined") {
