@@ -249,15 +249,22 @@ function addAddressList(txInfo) {
 
 // アドレスリストへの追加
 function addAddressListForTwitterAccount(txInfo) {
-  console.log({
-    address: txInfo.signer.address.plain(),
-    messageType: txInfo.message.type,
-    message: txInfo.message.payload,
-  });
-
   // タイムスタンプの算出
   const timstamp = (epochAdjustment * 1000) + Number(txInfo.transactionInfo.timestamp.toString());
   const dateTime = new Date(timstamp);
+
+  // 送信XYMの取得(実施記録用)
+  const xymMosaic = txInfo.networkType === NetTypeEnum.Main ? new sym.MosaicId("6BED913FA20223F8") : new sym.MosaicId("72C0212E67A08BCE");
+  const sendXymMosaic = txInfo.mosaics.find(mosaic => (mosaic.id.id.toHex() === xymMosaic.id.toHex()));
+  const sendXym = typeof sendXymMosaic === "undefined" ? "N/A" : (Number(sendXymMosaic.amount.toString()) / (Math.pow(10, 6))).toString();
+
+  console.log({
+    address: txInfo.signer.address.plain(),
+    date: dateTime.toLocaleDateString('ja-JP') + ' ' + dateTime.toLocaleTimeString('ja-JP'),
+    xym: sendXym,
+    messageType: txInfo.message.type,
+    message: txInfo.message.payload,
+  });
 
   // 同じアドレスの2回目以降のトランザクションは対象外にする
   const isDuplicate = addressList.find(addr => (addr.address === txInfo.signer.address.plain()));
