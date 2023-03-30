@@ -129,7 +129,7 @@ lotteryTransaction = (function() {
 });
 
 // 特定期間のTx取得
-getPeriodTxList = (async function(address, netType, startDateStr, endDateStr,) {
+getPeriodTxList = (async function(address, netType, startDateStr, endDateStr, allFlag) {
   // リポジトリ設定
   if (!(await setRepository(netType))) {
     return false;
@@ -190,6 +190,12 @@ getPeriodTxList = (async function(address, netType, startDateStr, endDateStr,) {
     addAddressListForTwitterAccount(element);
   });
   console.log(addressList);
+  if (allFlag) {
+    txList.forEach(element => {
+      tempAddAddressListForTwitterAccount(element);
+    });
+    console.log("all", addressList);
+  }
 
   return true;
 });
@@ -308,6 +314,34 @@ function addAddressListForTwitterAccount(txInfo) {
     address: txInfo.signer.address.plain(),
     twitter: accountName,
     state: isSame ? LotteryStateEnum.Duplicate : LotteryStateEnum.Vote,
+    message: sym.MessageType.EncryptedMessage === txInfo.message.type ? '[Encrypted Message]' : txInfo.message.payload,
+  });
+}
+
+// アドレスリストへの追加
+function tempAddAddressListForTwitterAccount(txInfo) {
+  // 既に同じアドレスが存在する場合は追加
+  if (addressList.find(addr => (addr.address === txInfo.signer.address.plain()))) {
+    return;
+  }
+
+  // タイムスタンプの算出
+  const timstamp = (epochAdjustment * 1000) + Number(txInfo.transactionInfo.timestamp.toString());
+  const dateTime = new Date(timstamp);
+
+  console.log({
+    address: txInfo.signer.address.plain(),
+    date: dateTime.toLocaleDateString('ja-JP') + ' ' + dateTime.toLocaleTimeString('ja-JP'),
+    messageType: txInfo.message.type,
+    message: txInfo.message.payload,
+  });
+
+  // リスト追加
+  addressList.push({
+    time: dateTime.toLocaleDateString('ja-JP') + ' ' + dateTime.toLocaleTimeString('ja-JP'),
+    address: txInfo.signer.address.plain(),
+    twitter: "N/A",
+    state: LotteryStateEnum.Vote,
     message: sym.MessageType.EncryptedMessage === txInfo.message.type ? '[Encrypted Message]' : txInfo.message.payload,
   });
 }

@@ -112,12 +112,17 @@
           </div>
         </div>
         <div class="mb-3 row">
-          <div class="col-6 text-center">
-            <button type="button" class="btn btn-primary" id="buttonStart" onclick="onListenStartClick()">
+          <div class="col-4 text-center">
+            <button type="button" class="btn btn-primary" id="buttonStart" onclick="onTotalizationClick()">
               Totalization
             </button>
           </div>
-          <div class="col-6 text-center">
+          <div class="col-4 text-center">
+            <button type="button" class="btn btn-primary" id="buttonAll" onclick="onAllClick()">
+              All
+            </button>
+          </div>
+          <div class="col-4 text-center">
             <button type="button" class="btn btn-primary btn-secondary" id="buttonLottery" disabled onclick="onExecuteLottery()">
               Lottery
             </button>
@@ -164,17 +169,25 @@
 <script src="resource/bundle.js"></script>
 <script>
   let intervalId = null;
-  async function onListenStartClick() {
+  async function onTotalizationClick() {
+    totalization(false);
+  }
+  async function onAllClick() {
+    totalization(true);
+  }
+  async function totalization(allFlag) {
     document.forms.formMosaic.inputAddress.disabled = true;
     document.forms.formMosaic.inputNetType.disabled = true;
     document.forms.formMosaic.start.disabled = true;
     document.forms.formMosaic.end.disabled = true;
     disableButtonElement('buttonStart');
+    disableButtonElement('buttonAll');
     await getPeriodTxList(
       document.forms.formMosaic.inputAddress.value,
       document.forms.formMosaic.inputNetType.value,
       document.forms.formMosaic.start.value,
-      document.forms.formMosaic.end.value
+      document.forms.formMosaic.end.value,
+      allFlag
     );
     refreshList();
     enableButtonElement('buttonLottery');
